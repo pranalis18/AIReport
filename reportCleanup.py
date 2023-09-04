@@ -56,6 +56,7 @@ def draw_annotations(row, heatmap_img, color_map, thickness = -1):
     color = color_map[row.annot_type]
     heatmap_img = cv2.drawContours(heatmap_img, [ctr], 0, color, thickness)
 
+#Given the coordinates of a polygon, find centroid
 def find_polygon_centroid(polygon_coords):
     n = len(polygon_coords)
     sum_x, sum_y = zip(*polygon_coords)
