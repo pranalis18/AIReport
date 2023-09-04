@@ -63,38 +63,6 @@ def find_polygon_centroid(polygon_coords):
     centroid_y = sum(sum_y) / n
     return centroid_x, centroid_y
 
-#Don't think we are using this function anymore
-def get_color_coded_tubule_image(tubule_mask, seg_mask, mpp):
-    ct_mask = seg_mask.copy()
-    ct_mask[ct_mask!=1] = 0
-    tubule_in_ct_mask = ct_mask*tubule_mask
-    tubule_in_seg_mask = seg_mask*tubule_mask
-    cmap = np.zeros((8,1,3), dtype=np.uint8)
-    ct_area = np.count_nonzero(ct_mask)*1.2*1.2
-    tubule_area = np.count_nonzero(tubule_mask)*1.2*1.2
-    tubule_in_ct_area = np.count_nonzero(tubule_in_ct_mask)*1.2*1.2
-    tubule_percentage_in_ct = (tubule_in_ct_area/ct_area)*100
-    contours = cv2.findContours(image=tubule_in_ct_mask, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)[0]
-    cont = []
-    print(len(contours))
-    threshold = 40000.0 * mpp * mpp / (1.2*1.2)
-    for cnt in contours:
-        area = cv2.contourArea(cnt)
-        print(area)
-        if area > threshold:
-            cont.append(cnt)
-    for lid in range(8):
-        if lid==0:
-            cmap[lid] = [[0, 0, 0]]
-        elif lid==1:
-            cmap[lid] = [[10, 10, 255]]
-        else:
-            cmap[lid] = [[255, 10, 10]]
-
-    cmap = np.resize(cmap, (256,1,3))
-    img_color = cv2.applyColorMap(tubule_in_seg_mask, cmap)
-    return img_color, tubule_percentage_in_ct, len(cont)
-
 def tbCalc(tb_mm, percentTB):
     tbScore = 2
     
