@@ -669,7 +669,7 @@ table1.at['Mitotic score', 'AI score'] = str(mitInfo[0]['MIT']) + " mitotsis/ " 
 table1.at['Mitotic score', 'AI translated score'] = mitScore
 
 #Nuclear pleomorphism score
-table1.at['Nuclear pleomorphism', 'AI score'] = str(round(sideMean, 0)) + " \u00b5m\u00b2 mean, " + str(round(sideSD, 0)) + "  std"
+table1.at['Nuclear pleomorphism', 'AI score'] = str(round(sideMean, 1)) + " \u00b5m\u00b2 mean, " + str(round(sideSD, 1)) + "  std"
 table1.at['Nuclear pleomorphism', 'AI translated score'] = npScore
 
 #Tubule formation score
