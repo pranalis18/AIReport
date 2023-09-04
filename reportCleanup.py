@@ -282,6 +282,7 @@ cv2.imwrite(report + 'segment_overlay_nuclei_heatmap.png', cv2.cvtColor(cv2.resi
 image = Image.open(report + 'segment_overlay_nuclei_heatmap.png')
 overlay = Image.new('RGBA', (resizeW, resizeH), (0, 0, 0, 0))
 draw = ImageDraw.Draw(overlay)
+draw.rectangle([(box_x, box_y), (resizeW, box_y + 20)], fill='white') 
 draw.text((text_x, text_y), text, fill=(0, 0, 0, 255), font = font)  # Adjust the color as needed
 result = Image.alpha_composite(image.convert('RGBA'), overlay)
 result.save(report + 'segment_overlay_nuclei_heatmap.png')
