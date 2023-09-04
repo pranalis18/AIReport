@@ -446,7 +446,6 @@ if HPFabsent == False:
     hpfMIT.to_csv(hpfMITfile, index=False)
     mit1['HPF'].value_counts()
     
-
     with open(path + '/image_info.json') as file:
         meta = json.load(file)
     #HPF thumbnail image
