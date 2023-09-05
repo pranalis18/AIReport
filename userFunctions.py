@@ -6,7 +6,6 @@ import pandas as pd
 from ast import literal_eval
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
-import qrcode
 import re 
 import statistics
 import torch

@@ -1,3 +1,5 @@
+#main.py
+
 from PIL import Image, ImageDraw, ImageFont
 import json
 import numpy as np
@@ -14,6 +16,7 @@ import geojson
 import seaborn as sns
 import os
 import shutil
+import userFunctions
 
 #Input slide data
 slideName = 'H3U07755_F2'
@@ -46,143 +49,6 @@ stilsFile = path + '/stils_patchwise_cell_type_data.csv'
 #We can maybe take this as an input parameter and the slideInfo file can have an absolute path
 slideInfo = False
 slideInfoFile = 'TCGA_BRCA.csv'
-
-#Functions
-def draw_annotations(row, heatmap_img, color_map, thickness = -1):
-    points = row.points
-    points = literal_eval(points)
-    ## convert to contour
-    ctr = np.array(points).reshape((-1,1,2)).astype(np.int32)
-    color = color_map[row.annot_type]
-    heatmap_img = cv2.drawContours(heatmap_img, [ctr], 0, color, thickness)
-
-#Given the coordinates of a polygon, find centroid
-def find_polygon_centroid(polygon_coords):
-    n = len(polygon_coords)
-    sum_x, sum_y = zip(*polygon_coords)
-    centroid_x = sum(sum_x) / n
-    centroid_y = sum(sum_y) / n
-    return centroid_x, centroid_y
-
-def tbCalc(tb_mm, percentTB):
-    tbScore = 2
-    
-    #These values are hard coded right now. May want to consult Dr Nameeta about it
-    if tb_mm >= 10 and percentTB > 3:
-        tbScore = 1
-    if tb_mm < 3 and percentTB < 1.5:
-        tbScore = 3
-        
-    return tbScore
-
-def MITcalc(mimiMITfile, hpfMITfile, celltypeFile):
-    mimiMIT = pd.read_csv(mimiMITfile)
-    celltype = pd.read_csv(celltypeFile)
-    MITcells = mimiMIT['annot_type'].value_counts()['MIT']
-    CEcells = celltype['annot_type'].value_counts()['CE']
-    MITcellPerCE = round(MITcells * 10000 / CEcells, 0)
-    if os.path.exists(hpfMITfile):
-        hpfMIT = pd.read_csv(hpfMITfile)
-        MIT_hpf = hpfMIT['annot_type'].value_counts()
-    else:
-        MIT_hpf = {'HPF': 0, 'MIT': 0}
-        
-    return MIT_hpf, MITcellPerCE
-
-def mitoticScoreCalc(MIT_hpf):
-    
-    #Again hard coded values here
-    lowCriteria = 7
-    midCriteria = 14
-    
-    if MIT_hpf['MIT'] < lowCriteria:
-        MITscore = 1
-    elif MIT_hpf['MIT'] >= lowCriteria and MIT_hpf['MIT'] < midCriteria:
-        MITscore = 2
-    elif MIT_hpf['MIT'] >= midCriteria:
-        MITscore = 3
-    
-    return MITscore
-
-def npScoreCalc(sideMean, sideIQR, confidence):
-    npScore = 2
-    
-    if sideMean < 8 and sideIQR < 2 and confidence < 0.25:
-        npScore = 1
-    
-    temp = 0
-    if sideMean > 9.5:
-        temp += 1
-    if sideIQR > 4:
-        temp += 1
-    if confidence > 0.4:
-        temp += 1
-    
-    if temp > 1:
-        npScore = 3
-        
-    return npScore
-
-def segmentationTable(segmentationJson):
-    removeSegment = 'SPA'
-    segmentationData = pd.read_json(segmentationJson, orient ='index')
-    segmentationData.columns = ['area in mm2']
-    segmentationData['area in mm2'] = round(segmentationData['area in mm2']/1000000, 2)
-    segmentationData.index = segmentationData.index.str.replace('_area', '')
-    segmentationData.drop('SPA', inplace = True)
-    total_count = segmentationData['area in mm2'].sum()
-    segmentationData['%area'] = round((segmentationData['area in mm2'] / total_count) * 100, 1)
-    segmentationDf = segmentationData.sort_values(by = '%area', ascending = False)
-    return segmentationDf
-
-def celltypeTable(celltypeFile, mimiMITfile):
-    cellTypeData = pd.read_csv(celltypeFile)
-    cellTypeDf = cellTypeData['annot_type'].value_counts().reset_index()
-    cellTypeDf = cellTypeDf.rename(columns = {'index': 'Segment', 0: 'Total count'})
-    cellTypeDf.columns = ['Segment', 'Total count']
-
-    mimiMIT = pd.read_csv(mimiMITfile)
-    mitvalues = mimiMIT['annot_type'].value_counts()
-
-    mimi = {'Segment': 'mimi', 'Total count' : mitvalues['mimi']}
-    MIT = {'Segment': 'MIT', 'Total count' : mitvalues['MIT']}
-    new_row_df = pd.DataFrame([mimi])
-    cellTypeDf = pd.concat([cellTypeDf, new_row_df], ignore_index=True)
-    new_row_df = pd.DataFrame([MIT])
-    cellTypeDf = pd.concat([cellTypeDf, new_row_df], ignore_index=True)
-    cellTypeDf['per mm2'] = cellTypeDf['Total count']/totalArea
-    CEvalue = cellTypeDf[cellTypeDf['Segment'] == 'CE']
-    cellTypeDf['per 1000 epithelial cells'] = round((cellTypeDf['Total count'] * 1000)/CEvalue['Total count'].iloc[0], 0)
-    
-    return cellTypeDf
-
-def celltypePerSegmentTable(celltypePerSegmentJson):
-    celltypePerSegmentData = pd.read_json(celltypePerSegmentJson, orient ='index')
-    celltypePerSegmentData.index = celltypePerSegmentData.index.str.replace('_counts_in', '')
-    celltypePerSegmentData['Celltype'] = celltypePerSegmentData.index.str.split('_').str[0]
-    celltypePerSegmentData['Segment'] = celltypePerSegmentData.index.str.split('_').str[1]
-    celltypePerSegmentData.columns = ['value', 'Celltype', 'Segment']
-    celltypeBySegmentMatrix = celltypePerSegmentData.pivot(index = 'Celltype', columns = 'Segment', values = 'value')
-    celltypeBySegmentMatrix[np.isnan(celltypeBySegmentMatrix)] = 0
-    celltypeBySegmentMatrix = celltypeBySegmentMatrix.drop('SPA', axis=1)  # axis=1 means we are dropping a column
-    percentMatrix = celltypeBySegmentMatrix.div(celltypeBySegmentMatrix.sum(axis = 1), axis = 0)
-    percentMatrix = round(percentMatrix *100, 2)
-
-    return percentMatrix
-
-def has_negative_coordinates(coordinates_list):
-    for x, y in coordinates_list:
-        if x < 0 or y < 0:
-            return True
-    return False
-
-def is_centroid_inside_any_contour(centroid, contours):
-    x, y = centroid
-    for contour in contours:
-        result = cv2.pointPolygonTest(np.array(contour), (x, y), False)
-        if result > 0:
-            return True
-    return False
 
 #Create a statsFile
 statsFile = {
@@ -261,7 +127,7 @@ result.save(report + 'thumbnail.png')
 #Page1 Image3 Nuclei heatmap
 annot_df = pd.read_csv(nucleiFile)
 heatmap_img = np.zeros((meta['h'], meta['w'], 3), dtype = np.uint8)
-annot_df.apply(draw_annotations, axis = 1, args = (heatmap_img, nuclei_color_map))[0]
+annot_df.apply(userFunctions.draw_annotations, axis = 1, args = (heatmap_img, nuclei_color_map))[0]
 cv2.imwrite(report + 'nuclei_heatmap.png', cv2.cvtColor(cv2.resize(heatmap_img, (resizeW, resizeH)), cv2.COLOR_BGR2RGB))
 image = Image.open(report + 'nuclei_heatmap.png')
 
@@ -269,13 +135,14 @@ image = Image.open(report + 'nuclei_heatmap.png')
 #Here I am assuming all the images on Page1 have the same height and width.
 overlay = Image.new('RGBA', (resizeW, resizeH), (0, 0, 0, 0))
 draw = ImageDraw.Draw(overlay)
+draw.rectangle([(box_x, box_y), (resizeW, box_y + 20)], fill='white') 
 draw.text((text_x, text_y), text, fill=(0, 0, 0, 255), font = font)  # Adjust the color as needed
 result = Image.alpha_composite(image.convert('RGBA'), overlay)
 result.save(report + 'nuclei_heatmap.png')
 
 #Page1 Image4 segment overlay nuclei heatmap
 df = pd.read_csv(segmentContoursFile)
-df.apply(draw_annotations, axis = 1, args = (heatmap_img, segment_color_map, 200))[0]
+df.apply(userFunctions.draw_annotations, axis = 1, args = (heatmap_img, segment_color_map, 200))[0]
 cv2.imwrite(report + 'segment_overlay_nuclei_heatmap.png', cv2.cvtColor(cv2.resize(heatmap_img, (resizeW, resizeH)), cv2.COLOR_BGR2RGB))
 
 #Overlay scale bar 
@@ -366,10 +233,9 @@ if HPFabsent == False:
             is_inside2 = np.all((mit_coords[2][0] >= hpf_coords.min(axis=0)[0]) & (mit_coords[2][0] <= hpf_coords.max(axis=0)[0]) & (mit_coords[2][1] >= hpf_coords.min(axis = 0)[1]) & (mit_coords[2][1] <= hpf_coords.max(axis = 0)[1]))
             
             #Checking here if top-left and bottom-right coordinates of the mitotic cell are inside the HPF
-            if is_inside1:
-                if is_inside2:
-                    mit.loc[mit_index, 'HPF'] = str(hpf_index + 1)
-                    mit.loc[mit_index, 'HPFcoords'] = coords
+            if is_inside1 and is_inside2:
+                mit.loc[mit_index, 'HPF'] = str(hpf_index + 1)
+                mit.loc[mit_index, 'HPFcoords'] = coords
 
     #Remove any mitotic cells which don't belong to any HPFs
     mit = mit[mit['HPF'].notna()]
@@ -402,14 +268,14 @@ if HPFabsent == False:
             flattened_points = [coord for point in rect_coords for coord in point]
             draw.polygon(flattened_points, outline = 'yellow', width = 10)
 
-            centroid_x, centroid_y = find_polygon_centroid(polygon_coords= rect_coords)
+            centroid_x, centroid_y = userFunctions.find_polygon_centroid(polygon_coords= rect_coords)
             vertices = [(centroid_x + expansion_pixels, centroid_y + expansion_pixels),
                         (centroid_x - expansion_pixels, centroid_y + expansion_pixels),
                         (centroid_x - expansion_pixels, centroid_y - expansion_pixels),
                         (centroid_x + expansion_pixels, centroid_y - expansion_pixels)]
             
             #check if anyone of the vertices are outside the HPF. The vertices are calculated post expansion
-            if has_negative_coordinates(coordinates_list = vertices):
+            if userFunctions.has_negative_coordinates(coordinates_list = vertices):
                 new_vertices = []
                 temp = 1
                 for x, y in vertices:
@@ -496,7 +362,7 @@ cv2.imwrite(report + 'tbImage.png', image)
 with open(path + '/tubule.json') as file:
     tbInfo = json.load(file)
 tb_mm = (tbInfo['total_number_tubules_in_ct_10']/tbInfo['ct_area'])*1000000
-tbScore = tbCalc(tb_mm, tbInfo['total_percentage_tubule_area_in_ct'])
+tbScore = userFunctions.tbCalc(tb_mm, tbInfo['total_percentage_tubule_area_in_ct'])
 tbInfo['tb_mm'] = tb_mm
 tbInfo['Tubule score'] = tbScore
 with open(report + 'tbInfo.json', 'w') as json_file:
@@ -639,7 +505,7 @@ else:
 
 #Calculate nuclear pleomorphism AI score
 confidence = ncData['0.9']
-npScore = npScoreCalc(sideMean, sideIQR, confidence)
+npScore = userFunctions.npScoreCalc(sideMean, sideIQR, confidence)
 statsFile = {**statsFile, **ncData}
 
 with open(report + 'nucleoli_data.json', "w") as json_file:
@@ -651,7 +517,7 @@ rows = ['Mitotic score', 'Nuclear pleomorphism', 'Glandular (Acinar)/ Tubular Di
 
 # Create the DataFrame
 table1 = pd.DataFrame(columns = columns, index = rows)
-mitInfo = MITcalc(mimiMITfile, hpfMITfile, celltypeFile)
+mitInfo = userFunctions.MITcalc(mimiMITfile, hpfMITfile, celltypeFile)
 mitInfo_cellperCE = int(round(mitInfo[1], 0))
 
 if HPFabsent:
@@ -662,7 +528,7 @@ if HPFabsent:
     if mitInfo_cellperCE > 40:
         mitScore = 3
 else:
-    mitScore = mitoticScoreCalc(mitInfo[0])
+    mitScore = userFunctions.mitoticScoreCalc(mitInfo[0])
 
 #Mitotic Score     
 table1.at['Mitotic score', 'AI score'] = str(mitInfo[0]['MIT']) + " mitotsis/ " + str(mitInfo[0]['HPF']) + " HPF\n" + str(mitInfo_cellperCE) + " mitotsis/10000 tumor cells"
@@ -679,8 +545,8 @@ table1.at['Glandular (Acinar)/ Tubular Differentiation', 'AI translated score'] 
 table1.at['Overall Grade', 'AI translated score'] = mitScore + npScore + tbScore
 table1_summary = table1.fillna(' ')
 table1 = table1.fillna(' ')
-mitInfo = MITcalc(mimiMITfile, hpfMITfile, celltypeFile)
-mitScore = mitoticScoreCalc(mitInfo[0])
+mitInfo = userFunctions.MITcalc(mimiMITfile, hpfMITfile, celltypeFile)
+mitScore = userFunctions.mitoticScoreCalc(mitInfo[0])
 mitInfo_cellperCE = int(round(mitInfo[1], 0))
 table1_summary.to_json(report + 'table1_summary.json', orient='index')
 
@@ -694,7 +560,7 @@ statsFile['mitoticScore'] = mitScore
 statsFile['npScore'] = npScore
 
 #Page1 Table2
-table2 = segmentationTable(segmentationJson)
+table2 = userFunctions.segmentationTable(segmentationJson)
 table2.to_json(report + 'table2_summary.json', orient='index')
 totalArea = table2['area in mm2'].sum()
 
@@ -711,7 +577,7 @@ result_dict = result_dict = melted_df.set_index('Segment')['Value'].to_dict()
 statsFile = {**statsFile, **result_dict}
 
 #Page1 Table3
-table3 = celltypeTable(celltypeFile, mimiMITfile)
+table3 = userFunctions.celltypeTable(celltypeFile, mimiMITfile, totalArea)
 table3.to_json(report + 'table3_summary.json', orient='index')
 
 melted_df = pd.melt(table3, id_vars=['Segment'], var_name='Attribute', value_name='Value')
@@ -729,7 +595,7 @@ result_dict = result_dict = melted_df.set_index('Segment')['Value'].to_dict()
 statsFile = {**statsFile, **result_dict}
 
 #Page1 Table4
-table4 = celltypePerSegmentTable(celltypePerSegmentJson)
+table4 = userFunctions.celltypePerSegmentTable(celltypePerSegmentJson)
 table4.to_json(report + 'table4_summary.json', orient='index')
 
 table4.reset_index(inplace=True)
@@ -762,7 +628,7 @@ values_to_check = ['FAT', 'NE']
 # Subset the DataFrame based on the condition
 df_segment = df[df['annot_type'].isin(values_to_check)]
 df_segment['contour'] = df_segment['points'].apply(lambda x: np.array(literal_eval(x)))
-stils['select'] = stils.apply(lambda row: 'remove' if is_centroid_inside_any_contour((row['x'], row['y']), df_segment['contour']) else row['select'], axis=1)
+stils['select'] = stils.apply(lambda row: 'remove' if userFunctions.is_centroid_inside_any_contour((row['x'], row['y']), df_segment['contour']) else row['select'], axis=1)
 
 stils = stils[stils['select'] == 'Keep']
 for index, row in stils.iterrows():
