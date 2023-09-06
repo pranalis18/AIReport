@@ -30,20 +30,20 @@ else:
     os.mkdir(report)
 
 #Input file names
-imageInfoFile = path + '/image_info.json'
-nucleiFile = path + '/nuclei.csv'
-segmentContoursFile = path + '/segmentation_contours.csv'
-hpfMITfile = path + '/hpf.csv'
-thumbnail = path + '/thumbnail.png'
-tbDataFile = path + '/tubule_contours.csv'
-imageFile = path + '/thumbnail.png'
-mimiMITfile =  path + '/mitotic.csv'
-celltypeFile = path + '/nuclei.csv'
-npDataFile = path + '/nuclear_pleomorphism_data.json'
-tbDataFile = path + '/tubule_contours.csv'
-segmentationJson = path + '/segmentation_area_stats.json'
-celltypePerSegmentJson = path + '/segmentation_cell_wise_data.json'
-stilsFile = path + '/stils_patchwise_cell_type_data.csv'
+#imageInfoFile = path + '/image_info.json'
+#nucleiFile = path + '/nuclei.csv'
+#segmentContoursFile = path + '/segmentation_contours.csv'
+#hpfMITfile = path + '/hpf.csv'
+#thumbnail = path + '/thumbnail.png'
+#tbDataFile = path + '/tubule_contours.csv'
+#imageFile = path + '/thumbnail.png'
+#mimiMITfile =  path + '/mitotic.csv'
+#celltypeFile = path + '/nuclei.csv'
+#npDataFile = path + '/nuclear_pleomorphism_data.json'
+#tbDataFile = path + '/tubule_contours.csv'
+#segmentationJson = path + '/segmentation_area_stats.json'
+#celltypePerSegmentJson = path + '/segmentation_cell_wise_data.json'
+#stilsFile = path + '/stils_patchwise_cell_type_data.csv'
 
 #Replace with True if clinical information is present.
 #We can maybe take this as an input parameter and the slideInfo file can have an absolute path
@@ -205,7 +205,7 @@ qrCode.save(report + 'qrCode.png')
 
 #HPF analysis
 #Look for the *hpf.csv
-if os.path.exists(hpfMITfile):
+if os.path.exists(path + '/hpf.csv'):
     HPFabsent = False
 else:
     HPFabsent = True
@@ -335,7 +335,7 @@ if HPFabsent == False:
 with open(imageInfoFile) as file:
     meta = json.load(file)
     
-df = pd.read_csv(tbDataFile, index_col = [0])
+df = pd.read_csv(path + '/tubule_contours.csv', index_col = [0])
 #Remove all the entries which say 'Other' in the annot_type column
 subset_df = df[df['annot_type'] != 'Other']
 
