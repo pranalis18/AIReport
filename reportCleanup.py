@@ -75,8 +75,7 @@ segment_color_map = {
     "NE": (255, 255, 0),
     "Other": (208, 235, 241),
     "Skin": (255, 42, 42),
-    "BR-D": (68, 78, 172),
-}
+    "BR-D": (68, 78, 172)}
 
 segm_label_id_map = {
     0: "SPA",
