@@ -366,9 +366,10 @@ tbScore = userFunctions.tbCalc(tb_mm, tbInfo['total_percentage_tubule_area_in_ct
 tbInfo['tb_mm'] = tb_mm
 tbInfo['Tubule score'] = tbScore
 with open(report + 'tbInfo.json', 'w') as json_file:
-            if is_inside1 and is_inside2:
-                mit.loc[mit_index, 'HPF'] = str(hpf_index + 1)
-                mit.loc[mit_index, 'HPFcoords'] = coords
+    json.dump(tbInfo, json_file)
+statsFile = {**statsFile, **tbInfo}
+
+#Nuclear pleomorphism data
 with open(npDataFile) as file:
     npData = json.load(file)
 # Extract data
@@ -622,7 +623,7 @@ stils = pd.read_csv(stilsFile)
 stils['x'] = stils['start_x'].apply(lambda x: (x + (x + 200))/2)
 stils['y'] = stils['start_y'].apply(lambda x: (x + (x + 200))/2)
 stils['select'] = 'Keep'
-df = pd.read_csv(segmentContoursFile)
+df = pd.read_csv(path + '/segmentation_contours.csv')
 #Segment from which sTILs should be removed
 values_to_check = ['FAT', 'NE']
 
