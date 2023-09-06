@@ -85,8 +85,7 @@ segm_label_id_map = {
     4: "NE",
     5: "Other",
     6: "Skin",
-    7: "BR-D",
-}
+    7: "BR-D"}
 
 stils_color_map = {'CT': (22, 55, 5),
  'ST': (173,216,230),
