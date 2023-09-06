@@ -16,6 +16,19 @@ import shutil
 
 
 #Functions
+
+def read_config_file(file_path):
+    try:
+        with open(file_path, 'r') as config_file:
+            config_data = json.load(config_file)
+        return config_data
+    except FileNotFoundError:
+        print(f"Error: Config file not found at {file_path}")
+        return None
+    except json.JSONDecodeError:
+        print(f"Error: Invalid JSON format in config file {file_path}")
+        return None
+
 def draw_annotations(row, heatmap_img, color_map, thickness = -1):
     points = row.points
     points = literal_eval(points)
