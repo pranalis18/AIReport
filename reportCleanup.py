@@ -96,7 +96,7 @@ stils_color_map = {'CT': (22, 55, 5),
 
 #Page1 Image1 Thumbnail image
 # Read image metadata
-with open(imageInfoFile) as file:
+with open(path + '/image_info.json') as file:
     meta = json.load(file)
 
 # Scale calculation
@@ -123,7 +123,7 @@ result = Image.alpha_composite(image.convert('RGBA'), overlay)
 result.save(report + 'thumbnail.png')
 
 #Page1 Image3 Nuclei heatmap
-annot_df = pd.read_csv(nucleiFile)
+annot_df = pd.read_csv(path + '/nuclei.csv')
 heatmap_img = np.zeros((meta['h'], meta['w'], 3), dtype = np.uint8)
 annot_df.apply(userFunctions.draw_annotations, axis = 1, args = (heatmap_img, nuclei_color_map))[0]
 cv2.imwrite(report + 'nuclei_heatmap.png', cv2.cvtColor(cv2.resize(heatmap_img, (resizeW, resizeH)), cv2.COLOR_BGR2RGB))
@@ -139,7 +139,7 @@ result = Image.alpha_composite(image.convert('RGBA'), overlay)
 result.save(report + 'nuclei_heatmap.png')
 
 #Page1 Image4 segment overlay nuclei heatmap
-df = pd.read_csv(segmentContoursFile)
+df = pd.read_csv(path + '/segmentation_contours.csv')
 df.apply(userFunctions.draw_annotations, axis = 1, args = (heatmap_img, segment_color_map, 200))[0]
 cv2.imwrite(report + 'segment_overlay_nuclei_heatmap.png', cv2.cvtColor(cv2.resize(heatmap_img, (resizeW, resizeH)), cv2.COLOR_BGR2RGB))
 
@@ -210,7 +210,7 @@ else:
 
 if HPFabsent == False:
     #enter here only if HPFs were found in the image
-    hpfMIT = pd.read_csv(hpfMITfile)
+    hpfMIT = pd.read_csv(path + '/hpf.csv')
     hpfMIT
     i = 0
     
@@ -307,7 +307,7 @@ if HPFabsent == False:
     mit = mit.iloc[:, :5]
     #Rewrite the updated HPF file 
     hpfMIT = pd.concat([hpf, mit], ignore_index=True)
-    hpfMIT.to_csv(hpfMITfile, index=False)
+    hpfMIT.to_csv(path + '/hpf.csv', index=False)
     mit1['HPF'].value_counts()
     
     with open(path + '/image_info.json') as file:
@@ -330,7 +330,7 @@ if HPFabsent == False:
     cv2.imwrite(report + 'hpfThumbnail.png', image)
 
 #Tubule formation data
-with open(imageInfoFile) as file:
+with open(path + '/image_info.json') as file:
     meta = json.load(file)
     
 df = pd.read_csv(path + '/tubule_contours.csv', index_col = [0])
@@ -368,7 +368,7 @@ with open(report + 'tbInfo.json', 'w') as json_file:
 statsFile = {**statsFile, **tbInfo}
 
 #Nuclear pleomorphism data
-with open(npDataFile) as file:
+with open(path + '/nuclear_pleomorphism_data.json') as file:
     npData = json.load(file)
 # Extract data
 side = npData['side_data']
@@ -452,7 +452,7 @@ if HPFabsent:
     print('prominent nucleoli absent')
 else:
     prominentN = pd.read_csv(path + '/prominent_cells_first_hpf.csv')
-    nucleiData = pd.read_csv(nucleiFile)
+    nucleiData = pd.read_csv(path + '/nuclei.csv')
     prominent_coordinates = set(zip(prominentN['x1'], prominentN['y1']))
     def is_prominent(row):
         return (row['x1'] - 2, row['y1'] - 2) in prominent_coordinates
@@ -464,7 +464,7 @@ else:
     value_counts = nucleiData['prominent'].value_counts()
 
     #Assign a column named prominent in the HPF file to check.
-    hpf = pd.read_csv(hpfMITfile)
+    hpf = pd.read_csv(path + '/hpf.csv')
     hpf_coords = eval(hpf.at[0, 'points'].replace("{", "[").replace("}", "]"))
     hpf_coords1 = np.array(hpf_coords)
     subset_df = nucleiData
@@ -515,7 +515,7 @@ rows = ['Mitotic score', 'Nuclear pleomorphism', 'Glandular (Acinar)/ Tubular Di
 
 # Create the DataFrame
 table1 = pd.DataFrame(columns = columns, index = rows)
-mitInfo = userFunctions.MITcalc(mimiMITfile, hpfMITfile, celltypeFile)
+mitInfo = userFunctions.MITcalc(path + '/mitotic.csv', path + '/hpf.csv', path + '/nuclei.csv')
 mitInfo_cellperCE = int(round(mitInfo[1], 0))
 
 if HPFabsent:
@@ -545,7 +545,7 @@ table1.at['Glandular (Acinar)/ Tubular Differentiation', 'AI translated score'] 
 table1.at['Overall Grade', 'AI translated score'] = mitScore + npScore + tbScore
 table1_summary = table1.fillna(' ')
 table1 = table1.fillna(' ')
-mitInfo = userFunctions.MITcalc(mimiMITfile, hpfMITfile, celltypeFile)
+mitInfo = userFunctions.MITcalc(path + '/mitotic.csv', path + '/hpf.csv', path + '/nuclei.csv')
 mitScore = userFunctions.mitoticScoreCalc(mitInfo[0])
 mitInfo_cellperCE = int(round(mitInfo[1], 0))
 table1_summary.to_json(report + 'table1_summary.json', orient='index')
@@ -560,7 +560,7 @@ statsFile['mitoticScore'] = mitScore
 statsFile['npScore'] = npScore
 
 #Page1 Table2
-table2 = userFunctions.segmentationTable(segmentationJson)
+table2 = userFunctions.segmentationTable(path + '/segmentation_area_stats.json')
 table2.to_json(report + 'table2_summary.json', orient='index')
 totalArea = table2['area in mm2'].sum()
 
@@ -577,7 +577,7 @@ result_dict = result_dict = melted_df.set_index('Segment')['Value'].to_dict()
 statsFile = {**statsFile, **result_dict}
 
 #Page1 Table3
-table3 = userFunctions.celltypeTable(celltypeFile, mimiMITfile, totalArea)
+table3 = userFunctions.celltypeTable(path + '/nuclei.csv', path + '/mitotic.csv', totalArea)
 table3.to_json(report + 'table3_summary.json', orient='index')
 
 melted_df = pd.melt(table3, id_vars=['Segment'], var_name='Attribute', value_name='Value')
@@ -595,7 +595,7 @@ result_dict = result_dict = melted_df.set_index('Segment')['Value'].to_dict()
 statsFile = {**statsFile, **result_dict}
 
 #Page1 Table4
-table4 = userFunctions.celltypePerSegmentTable(celltypePerSegmentJson)
+table4 = userFunctions.celltypePerSegmentTable(path + '/segmentation_cell_wise_data.json')
 table4.to_json(report + 'table4_summary.json', orient='index')
 
 table4.reset_index(inplace=True)
@@ -612,12 +612,12 @@ result_dict = result_dict = melted_df.set_index('Segment')['Value'].to_dict()
 statsFile = {**statsFile, **result_dict}
 
 #sTILs Page
-with open(imageInfoFile) as file:
+with open(path + '/image_info.json') as file:
     meta = json.load(file)
 
 #Generate heatmap for sTILs
 heatmap_img = np.zeros((meta['h'], meta['w'], 3), dtype = np.uint8)
-stils = pd.read_csv(stilsFile)
+stils = pd.read_csv(path + '/stils_patchwise_cell_type_data.csv')
 stils['x'] = stils['start_x'].apply(lambda x: (x + (x + 200))/2)
 stils['y'] = stils['start_y'].apply(lambda x: (x + (x + 200))/2)
 stils['select'] = 'Keep'
