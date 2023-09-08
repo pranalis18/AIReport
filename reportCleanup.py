@@ -215,6 +215,7 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
         HPFabsent = False
     else:
         HPFabsent = True
+        print('HPF files: ' + str(HPFabsent))
 
     if HPFabsent == False:
         #enter here only if HPFs were found in the image
@@ -527,13 +528,15 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
     mitInfo_cellperCE = int(round(mitInfo[1], 0))
 
     if HPFabsent:
+        print('inside the HPFAbsent loop')
+        print('MITs/10000CE = ')
+        print(mitInfo_cellperCE)
         mitScore = 1
-        
         #Will enter here only if HPFs were not found.
         #Also the values here are hard coded
-        if mitInfo_cellperCE > 20:
+        if mitInfo_cellperCE > 10:
             mitScore = 2
-        if mitInfo_cellperCE > 40:
+        if mitInfo_cellperCE > 20:
             mitScore = 3
     else:
         mitScore = userFunctions.mitoticScoreCalc(mitInfo[0])

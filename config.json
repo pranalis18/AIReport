@@ -1,8 +1,4 @@
 {
-    "slideName":"H3U07755_F2",
-    "path":"/media/user/disk31/TCGA_report/Aug20/",
     "slideInfo":false,
-    "slideInfoFile":"TCGA_BRCA.csv",
-    "projectID":"TCGA",
-    "datasetID":"BRCA"
+    "slideInfoFile":"TCGA_BRCA.csv"
 }
