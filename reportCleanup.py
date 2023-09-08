@@ -1,6 +1,4 @@
-    #main.py
-def postReportStats(config_file_path):
-    from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont
     import json
     import numpy as np
     import cv2
@@ -18,23 +16,22 @@ def postReportStats(config_file_path):
     import shutil
     import userFunctions
 
-    config_data = read_config_file(config_file_path)
+def postReportStats(slideName, path, projectID, datasetID, config_file_path):
+    
+
+    config_data = userFunctions.read_config_file(config_file_path)
 
     if config_data:
         # Access parameters from the config data
-        slideName = config_data.get("slideName")
-        path = config_data.get("path")
         slideInfo = config_data.get("slideInfo")
         slideInfoFile = config_data.get("slideInfoFile")
-        projectID = config_data.get("projectID")
-        datasetID = config_data.get("datasetID")
 
 
     #Input slide data
     #slideName = 'H3U07755_F2'
 
     #Adjust the path here to suit your code
-    #path = '/media/user/disk31/TCGA_report/Aug20/' + slideName
+    path = os.path.join(path, slideName)
     report = path + '/report/'
     if os.path.exists(report):
         print('')
@@ -125,7 +122,7 @@ def postReportStats(config_file_path):
     box_x = resizeW - box_width
     box_y = 0
     draw.rectangle([(box_x, box_y), (resizeW, box_y + 20)], fill='white')  # Adjust dimensions and color as needed
-    font = ImageFont.truetype("Gidole-Regular.ttf")
+    font = ImageFont.truetype("AIReport/Gidole-Regular.ttf")
     text = '2 mm'
     text_width, text_height = draw.textsize(text)
     text_x = box_x + (box_width - text_width) // 2
@@ -687,7 +684,7 @@ def postReportStats(config_file_path):
     box_x = width - box_width
     box_y = 0
     draw.rectangle([(box_x, box_y), (width, box_y + 20)], fill= 'white')  # Adjust the dimensions and color as needed
-    font = ImageFont.truetype("Gidole-Regular.ttf")
+    font = ImageFont.truetype("AIReport/Gidole-Regular.ttf")
     text = '2 mm'
     text_width, text_height = draw.textsize(text)
     text_x = box_x + (box_width - text_width) // 2
@@ -816,4 +813,4 @@ def postReportStats(config_file_path):
     statsFile = {**statsFile, **result_dict}
 
     finalStats = pd.DataFrame(statsFile, index=[0]).transpose()
-    finalStats.to_csv(report + 'finalStats.csv', index=True)
+    finalStats.to_csv(report  + slideName + '_finalStats.csv', index=True)
