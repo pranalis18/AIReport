@@ -1,20 +1,20 @@
 from PIL import Image, ImageDraw, ImageFont
-    import json
-    import numpy as np
-    import cv2
-    import pandas as pd
-    from ast import literal_eval
-    import matplotlib.pyplot as plt
-    from matplotlib.patches import Rectangle
-    import qrcode
-    import re 
-    import statistics
-    import torch
-    import geojson
-    import seaborn as sns
-    import os
-    import shutil
-    import userFunctions
+import json
+import numpy as np
+import cv2
+import pandas as pd
+from ast import literal_eval
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+import qrcode
+import re 
+import statistics
+import torch
+import geojson
+import seaborn as sns
+import os
+import shutil
+import userFunctions
 
 def postReportStats(slideName, path, projectID, datasetID, config_file_path):
     
@@ -37,27 +37,6 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
         print('')
     else:
         os.mkdir(report)
-
-    #Input file names
-    #imageInfoFile = path + '/image_info.json'
-    #nucleiFile = path + '/nuclei.csv'
-    #segmentContoursFile = path + '/segmentation_contours.csv'
-    #hpfMITfile = path + '/hpf.csv'
-    #thumbnail = path + '/thumbnail.png'
-    #tbDataFile = path + '/tubule_contours.csv'
-    #imageFile = path + '/thumbnail.png'
-    #mimiMITfile =  path + '/mitotic.csv'
-    #celltypeFile = path + '/nuclei.csv'
-    #npDataFile = path + '/nuclear_pleomorphism_data.json'
-    #tbDataFile = path + '/tubule_contours.csv'
-    #segmentationJson = path + '/segmentation_area_stats.json'
-    #celltypePerSegmentJson = path + '/segmentation_cell_wise_data.json'
-    #stilsFile = path + '/stils_patchwise_cell_type_data.csv'
-
-    #Replace with True if clinical information is present.
-    #We can maybe take this as an input parameter and the slideInfo file can have an absolute path
-    #slideInfo = False
-    #slideInfoFile = 'TCGA_BRCA.csv'
 
     #Create a statsFile
     statsFile = {
@@ -122,7 +101,7 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
     box_x = resizeW - box_width
     box_y = 0
     draw.rectangle([(box_x, box_y), (resizeW, box_y + 20)], fill='white')  # Adjust dimensions and color as needed
-    font = ImageFont.truetype("AIReport/Gidole-Regular.ttf")
+    font = ImageFont.truetype("Gidole-Regular.ttf")
     text = '2 mm'
     text_width, text_height = draw.textsize(text)
     text_x = box_x + (box_width - text_width) // 2
@@ -684,7 +663,7 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
     box_x = width - box_width
     box_y = 0
     draw.rectangle([(box_x, box_y), (width, box_y + 20)], fill= 'white')  # Adjust the dimensions and color as needed
-    font = ImageFont.truetype("AIReport/Gidole-Regular.ttf")
+    font = ImageFont.truetype("Gidole-Regular.ttf")
     text = '2 mm'
     text_width, text_height = draw.textsize(text)
     text_x = box_x + (box_width - text_width) // 2
