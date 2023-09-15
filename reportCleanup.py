@@ -17,7 +17,7 @@ import shutil
 import userFunctions
 #import AIReport.userFunctions as userFunctions
 
-def postReportStats(slideName, path, config_file_path):
+def postReportStats(slideName, path, projectID, datasetID, config_file_path):
     
 
     config_data = userFunctions.read_config_file(config_file_path)
@@ -26,8 +26,6 @@ def postReportStats(slideName, path, config_file_path):
         # Access parameters from the config data
         slideInfo = config_data.get("slideInfo")
         slideInfoFile = config_data.get("slideInfoFile")
-        projectID = config_data.get("projectID")
-        datasetID = config_data.get("datasetID")
 
 
     #Input slide data
