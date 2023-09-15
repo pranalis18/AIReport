@@ -15,8 +15,9 @@ import seaborn as sns
 import os
 import shutil
 import userFunctions
+#import AIReport.userFunctions as userFunctions
 
-def postReportStats(slideName, path, projectID, datasetID, config_file_path):
+def postReportStats(slideName, path, config_file_path):
     
 
     config_data = userFunctions.read_config_file(config_file_path)
@@ -25,6 +26,8 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
         # Access parameters from the config data
         slideInfo = config_data.get("slideInfo")
         slideInfoFile = config_data.get("slideInfoFile")
+        projectID = config_data.get("projectID")
+        datasetID = config_data.get("datasetID")
 
 
     #Input slide data
@@ -37,6 +40,27 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
         print('')
     else:
         os.mkdir(report)
+
+    #Input file names
+    #imageInfoFile = path + '/image_info.json'
+    #nucleiFile = path + '/nuclei.csv'
+    #segmentContoursFile = path + '/segmentation_contours.csv'
+    #hpfMITfile = path + '/hpf.csv'
+    #thumbnail = path + '/thumbnail.png'
+    #tbDataFile = path + '/tubule_contours.csv'
+    #imageFile = path + '/thumbnail.png'
+    #mimiMITfile =  path + '/mitotic.csv'
+    #celltypeFile = path + '/nuclei.csv'
+    #npDataFile = path + '/nuclear_pleomorphism_data.json'
+    #tbDataFile = path + '/tubule_contours.csv'
+    #segmentationJson = path + '/segmentation_area_stats.json'
+    #celltypePerSegmentJson = path + '/segmentation_cell_wise_data.json'
+    #stilsFile = path + '/stils_patchwise_cell_type_data.csv'
+
+    #Replace with True if clinical information is present.
+    #We can maybe take this as an input parameter and the slideInfo file can have an absolute path
+    #slideInfo = False
+    #slideInfoFile = 'TCGA_BRCA.csv'
 
     #Create a statsFile
     statsFile = {
@@ -101,7 +125,7 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
     box_x = resizeW - box_width
     box_y = 0
     draw.rectangle([(box_x, box_y), (resizeW, box_y + 20)], fill='white')  # Adjust dimensions and color as needed
-    font = ImageFont.truetype("Gidole-Regular.ttf")
+    font = ImageFont.truetype("AIReport/Gidole-Regular.ttf")
     text = '2 mm'
     text_width, text_height = draw.textsize(text)
     text_x = box_x + (box_width - text_width) // 2
@@ -215,7 +239,6 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
         HPFabsent = False
     else:
         HPFabsent = True
-        print('HPF files: ' + str(HPFabsent))
 
     if HPFabsent == False:
         #enter here only if HPFs were found in the image
@@ -528,15 +551,13 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
     mitInfo_cellperCE = int(round(mitInfo[1], 0))
 
     if HPFabsent:
-        print('inside the HPFAbsent loop')
-        print('MITs/10000CE = ')
-        print(mitInfo_cellperCE)
         mitScore = 1
+        
         #Will enter here only if HPFs were not found.
         #Also the values here are hard coded
-        if mitInfo_cellperCE > 10:
-            mitScore = 2
         if mitInfo_cellperCE > 20:
+            mitScore = 2
+        if mitInfo_cellperCE > 40:
             mitScore = 3
     else:
         mitScore = userFunctions.mitoticScoreCalc(mitInfo[0])
@@ -666,7 +687,7 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
     box_x = width - box_width
     box_y = 0
     draw.rectangle([(box_x, box_y), (width, box_y + 20)], fill= 'white')  # Adjust the dimensions and color as needed
-    font = ImageFont.truetype("Gidole-Regular.ttf")
+    font = ImageFont.truetype("AIReport/Gidole-Regular.ttf")
     text = '2 mm'
     text_width, text_height = draw.textsize(text)
     text_x = box_x + (box_width - text_width) // 2
@@ -795,4 +816,4 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
     statsFile = {**statsFile, **result_dict}
 
     finalStats = pd.DataFrame(statsFile, index=[0]).transpose()
-    finalStats.to_csv(report  + slideName + '_finalStats.csv', index=True)
+    finalStats.to_csv(report + slideName + '_finalStats.csv', index=True)
