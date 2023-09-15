@@ -124,7 +124,8 @@ def celltypeTable(celltypeFile, mimiMITfile, totalArea):
 
     mimiMIT = pd.read_csv(mimiMITfile)
     mitvalues = mimiMIT['annot_type'].value_counts()
-
+    if 'MIT' not in mitvalues.index:
+        mitvalues['MIT'] = 0
     mimi = {'Segment': 'mimi', 'Total count' : mitvalues['mimi']}
     MIT = {'Segment': 'MIT', 'Total count' : mitvalues['MIT']}
     new_row_df = pd.DataFrame([mimi])
