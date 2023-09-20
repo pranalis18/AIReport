@@ -212,8 +212,8 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
         else:
             caseInfo['PAM50'] = 'NotAvailable'
 
-        caseInfo['PR'] = "https://amaranth-studies.vercel.app/report?projectId=" + projectID + "&datasetId=" + datasetID + "&imageId=" + slideName
-        with open(report + slideName + '_caseInfo.json', 'w') as json_file:
+        caseInfo['link'] = "https://amaranth-studies.vercel.app/report?projectId=" + projectID + "&datasetId=" + datasetID + "&imageId=" + slideName
+        with open(report + 'caseInfo.json', 'w') as json_file:
             json.dump(caseInfo, json_file)
 
     #QRcode generation
