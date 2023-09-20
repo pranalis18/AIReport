@@ -845,5 +845,5 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
         'Tubule information' : 'tbInfo.json',
         'sTILs information' : 'stilsTable.json',
         'sTILs/celltype' : 'stils_celltypeTable.json'}
-    with open(report + 'JSONinfo.json', "w") as json_file:
+    with open(report + 'table_metadata.json', "w") as json_file:
         json.dump(JSON_info, json_file)
