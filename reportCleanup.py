@@ -391,7 +391,7 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
         tbInfo = json.load(file)
     tb_mm = (tbInfo['total_number_tubules_in_ct_10']/tbInfo['ct_area'])*1000000
     tbScore = userFunctions.tbCalc(tb_mm, tbInfo['total_percentage_tubule_area_in_ct'])
-    tbInfo['tb_mm'] = tb_mm
+    tbInfo['Tubule/mm2'] = tb_mm
     tbInfo['Tubule score'] = tbScore
     with open(report + 'tbInfo.json', 'w') as json_file:
         json.dump(tbInfo, json_file)
