@@ -817,3 +817,18 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
 
     finalStats = pd.DataFrame(statsFile, index=[0]).transpose()
     finalStats.to_csv(report + slideName + '_finalStats.csv', index=True)
+    JSON_info = {
+        'Case information' : 'caseInfo.json',
+        'Summary' : 'table1_summary.json',
+        'Segment model' : 'table2_summary.json',
+        'Nuclei model' : 'table3_summary.json',
+        'Segment/Nuclei' : 'table4_summary.json',
+        'Mitotic information' : 'HPF_mitTable.json',
+        'Size' : 'sideDensity.json',
+        'Vesicularity' : 'vesicularityDensity.json',
+        'Prominent nucleoli' : 'nucleoli_data.json', 
+        'Tubule information' : 'tbInfo.json',
+        'sTILs information' : 'stilsTable.json',
+        'sTILs/celltype' : 'stils_celltypeTable.json'}
+    with open(report + 'JSONinfo.json', "w") as json_file:
+        json.dump(JSON_info, json_file)
