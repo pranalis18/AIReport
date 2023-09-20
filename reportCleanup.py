@@ -608,20 +608,35 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
 
     #Page1 Table3
     table3 = userFunctions.celltypeTable(path + '/nuclei.csv', path + '/mitotic.csv', totalArea)
+    table3.columns.values[0] = 'Celltype'
     table3.to_json(report + 'table3_summary.json', orient='index')
+    cellTable = table3.set_index('Celltype')
 
-    melted_df = pd.melt(table3, id_vars=['Segment'], var_name='Attribute', value_name='Value')
+    #HPF_mitTable
+    columns = ['Mitotic cells']
+    rows = ['Total count', 'per mm2', 'per 1000 tumor cells', 'Total mitosis in 10 consecutive HPF', 'AI derived score']
 
+    # Create the DataFrame
+    HPF_mitTable = pd.DataFrame(columns = columns, index = rows)
+    HPF_mitTable.at['Total count', 'Mitotic cells'] = cellTable.at['MIT', 'Total count']
+    HPF_mitTable.at['per mm2', 'Mitotic cells'] = round(cellTable.at['MIT', 'per mm2'], 1)
+    HPF_mitTable.at['per 1000 tumor cells', 'Mitotic cells'] = round(cellTable.at['MIT', 'per mm2'], 1)
+    HPF_mitTable.at['Total mitosis in 10 consecutive HPF', 'Mitotic cells'] = mitInfo[0]['MIT']
+    HPF_mitTable.at['AI derived score', 'Mitotic cells'] = mitScore
+    HPF_mitTable.to_json(report + 'HPF_mitTable.json', orient='index')
+
+    melted_df = pd.melt(table3, id_vars=['Celltype'], var_name='Attribute', value_name='Value')
+    print('Testing here')
     # Combine 'index' and 'Attribute' into a single column
-    melted_df['Combined'] = melted_df['Segment'] + ' ' + melted_df['Attribute']
+    melted_df['Combined'] = melted_df['Celltype'] + ' ' + melted_df['Attribute']
 
     # Drop the 'index' and 'Attribute' columns
-    melted_df.drop(columns=['Segment', 'Attribute'], inplace=True)
+    melted_df.drop(columns=['Celltype', 'Attribute'], inplace=True)
 
     # Rename columns for clarity
-    melted_df.columns = ['Value', 'Segment']
-    melted_df = melted_df[['Segment', 'Value']]
-    result_dict = result_dict = melted_df.set_index('Segment')['Value'].to_dict()
+    melted_df.columns = ['Value', 'Celltype']
+    melted_df = melted_df[['Celltype', 'Value']]
+    result_dict = result_dict = melted_df.set_index('Celltype')['Value'].to_dict()
     statsFile = {**statsFile, **result_dict}
 
     #Page1 Table4
