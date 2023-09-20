@@ -59,7 +59,11 @@ def tbCalc(tb_mm, percentTB):
 def MITcalc(mimiMITfile, hpfMITfile, celltypeFile):
     mimiMIT = pd.read_csv(mimiMITfile)
     celltype = pd.read_csv(celltypeFile)
-    MITcells = mimiMIT['annot_type'].value_counts()['MIT']
+    mitvalues = mimiMIT['annot_type'].value_counts()
+    if 'MIT' not in mitvalues.index:
+        mitvalues['MIT'] = 0
+
+    MITcells = mitvalues['MIT']
     CEcells = celltype['annot_type'].value_counts()['CE']
     MITcellPerCE = round(MITcells * 10000 / CEcells, 0)
     if os.path.exists(hpfMITfile):

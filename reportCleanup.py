@@ -123,7 +123,7 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
     box_x = resizeW - box_width
     box_y = 0
     draw.rectangle([(box_x, box_y), (resizeW, box_y + 20)], fill='white')  # Adjust dimensions and color as needed
-    font = ImageFont.truetype("AIReport/Gidole-Regular.ttf")
+    font = ImageFont.truetype("Gidole-Regular.ttf")
     text = '2 mm'
     text_width, text_height = draw.textsize(text)
     text_x = box_x + (box_width - text_width) // 2
@@ -685,7 +685,7 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
     box_x = width - box_width
     box_y = 0
     draw.rectangle([(box_x, box_y), (width, box_y + 20)], fill= 'white')  # Adjust the dimensions and color as needed
-    font = ImageFont.truetype("AIReport/Gidole-Regular.ttf")
+    font = ImageFont.truetype("Gidole-Regular.ttf")
     text = '2 mm'
     text_width, text_height = draw.textsize(text)
     text_x = box_x + (box_width - text_width) // 2
@@ -697,7 +697,7 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
     #sTILs table 1
     pixels =  200
     const = 1000
-    columns = ['%TILs', 'area in mm²']
+    columns = ['TILs density', 'TILs%', 'area in mm²']
     rows = ['Stromal TILs', 'Peri-tumoral TILs', 'Intra-tumoral TILs']
 
     # Create the DataFrame
@@ -708,7 +708,8 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
     counts = df1['label'].value_counts()
     if 'ST' in counts.index and 'iST' in counts.index:
         val = int(counts['iST']/(counts['iST'] + counts['ST']) * 100)
-        table.at['Stromal TILs', '%TILs'] = str(round(df1['TIL_percent'].mean() * 100, 1)) + '% (' + str(val) + '%)'
+        table.at['Stromal TILs', 'TILs density'] = str(round(df1['TIL_percent'].mean() * 100, 1)) + '%'
+        table.at['Stromal TILs', 'TILs%'] = str(val) + '%'
         val1 = (df1.shape[0] * pixels * pixels * meta['mpp'] * meta['mpp'])/(const * const)
         table.at['Stromal TILs', 'area in mm²'] = round(val1, 2)
     else:
@@ -719,7 +720,8 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
     counts = df2['label'].value_counts()
     if 'pST' in counts.index and 'ipST' in counts.index:
         val = int(counts['ipST']/(counts['ipST'] + counts['pST']) * 100)
-        table.at['Peri-tumoral TILs', '%TILs'] = str(round(df2['TIL_percent'].mean() * 100, 1)) + '% (' + str(val) + '%)'
+        table.at['Peri-tumoral TILs', 'TILs density'] = str(round(df2['TIL_percent'].mean() * 100, 1)) + '%'
+        table.at['Peri-tumoral TILs', 'TILs%'] = str(val) + '%'
         val1 = (df2.shape[0] * pixels * pixels * meta['mpp'] * meta['mpp'])/(const * const)
         table.at['Peri-tumoral TILs', 'area in mm²'] = round(val1, 2)
     else:
@@ -730,11 +732,11 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
     counts = df3['label'].value_counts()
     if 'CT' in counts.index and 'iCT' in counts.index:
         val = int(counts['iCT']/(counts['iCT'] + counts['CT']) * 100)
-        table.at['Intra-tumoral TILs', '%TILs'] = str(round(df3['TIL_percent'].mean() * 100, 1)) + '% (' + str(val) + '%)'
+        table.at['Intra-tumoral TILs', 'TILs density'] = str(round(df3['TIL_percent'].mean() * 100, 1)) + '%'
+        table.at['Intra-tumoral TILs', 'TILs%'] = str(val) + '%'
         val1 = (df3.shape[0] * pixels * pixels * meta['mpp'] * meta['mpp'])/(const * const)
         table.at['Intra-tumoral TILs', 'area in mm²'] = round(val1, 2)
     else:
-        table.at['Intra-tumoral TILs', '%TILs'] = str(round(df3['TIL_percent'].mean() * 100, 1)) + '% (' + str(val) + '%)'
         table.at['Intra-tumoral TILs', 'area in mm²'] = 0
 
     table.to_json(report + 'stilsTable.json', orient='index')
