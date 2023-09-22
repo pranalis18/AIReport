@@ -211,10 +211,19 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
             caseInfo['PAM50'] = clinical.at[caseID, 'PAM50']
         else:
             caseInfo['PAM50'] = 'NotAvailable'
+    else:
+        caseInfo['ID'] = slideName
+        caseInfo['Gender'] = 'NotAvailable'
+        caseInfo['Age'] = 'NotAvailable'
+        caseInfo['ER'] = 'NotAvailable'
+        caseInfo['PR'] = 'NotAvailable'
+        caseInfo['Her2'] = 'NotAvailable'
+        caseInfo['Stage'] = 'NotAvailable'
+        caseInfo['PAM50'] = 'NotAvailable'
 
-        caseInfo['link'] = "https://amaranth-studies.vercel.app/report?projectId=" + projectID + "&datasetId=" + datasetID + "&imageId=" + slideName
-        with open(report + 'caseInfo.json', 'w') as json_file:
-            json.dump(caseInfo, json_file)
+    caseInfo['link'] = "https://amaranth-studies.vercel.app/report?projectId=" + projectID + "&datasetId=" + datasetID + "&imageId=" + slideName
+    with open(report + 'caseInfo.json', 'w') as json_file:
+        json.dump(caseInfo, json_file)
 
     #QRcode generation
     #Here we need 3 user inputs: project ID, dataset ID and slideName.
