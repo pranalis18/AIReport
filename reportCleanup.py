@@ -221,7 +221,7 @@ def postReportStats(slideName, path, projectID, datasetID, config_file_path):
         caseInfo['Stage'] = 'NotAvailable'
         caseInfo['PAM50'] = 'NotAvailable'
 
-    caseInfo['link'] = "https://amaranth-studies.vercel.app/report?projectId=" + projectID + "&datasetId=" + datasetID + "&imageId=" + slideName
+    caseInfo['link'] = "https://amaranth-studies.vercel.app/report?project=" + projectID + "&dataset=" + datasetID + "&image=" + slideName
     with open(report + 'caseInfo.json', 'w') as json_file:
         json.dump(caseInfo, json_file)
 
